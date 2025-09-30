@@ -360,7 +360,7 @@ if (malformed.length) {
 
 console.log();
 function output(stats, valueFn) {
-  const withDps = stats.filter(({ dp }) => dp);
+  const withDps = stats.filter(({ dp }) => dp).sort(({ addr: addrA }, { addr: addrB }) => addrA - addrB);
   if (withDps.length) {
     console.log();
     console.log('With configured data points:');
@@ -369,7 +369,7 @@ function output(stats, valueFn) {
     }
   }
   
-  const woDps = stats.filter(({ dp }) => !dp);
+  const woDps = stats.filter(({ dp }) => !dp).sort(({ addr: addrA }, { addr: addrB }) => addrA - addrB);;
   if (woDps.length) {
     console.log();
     console.log('Without configured data points (output as raw / hex):');
