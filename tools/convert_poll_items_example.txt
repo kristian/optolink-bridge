@@ -1,0 +1,42 @@
+("aussentemperatur", 0x0101, 2, 0.1, True),
+
+("betriebsart", 0xB000, 1, "raw", False,),
+
+("heizkreisumwalzpumpe", 0x048D, 1, 1, True),
+("heizkreisumwalzpumpe_betriebsstunden", 0x058D, 4, 0.0002777777777777778, False),
+
+("hkl_niveau", 0x2006, 2, 0.1, True),
+("hkl_neigung", 0x2007, 2, 0.1, True),
+("hysterese", 0x7203, 2, 0.1, True),
+
+("puffer_temperatur", 0x010B, 2, 0.1, True),
+
+("primarkreis_vorlauftemperatur", 0x0103, 2, 0.1, True),
+("sekundarkreis_vorlauftemperatur", 0x0105, 2, 0.1, True),
+("rucklauftemperatur", 0x0106, 2, 0.1, True),
+
+("ww_temperatur_speicher", 0x010D, 2, 0.1, True),
+("ww_temperatur_soll", 0x6000, 2, 0.1, True),
+("ww_temperatur_soll2", 0x600C, 2, 0.1, True),
+("ww_zirkulationspumpe", 0x0490, 1, 1, True),
+
+("raum_temperatur_soll_normal", 0x2000, 2, 0.1, True),
+("raum_temperatur_soll_reduziert", 0x2001, 2, 0.1, True),
+("raum_temperatur_soll_party", 0x2022, 2, 0.1, True),
+
+("kompressor", 0x0480, 1, 1, True),
+("kompressor_phase", 0x0E1A, 3, "raw", False),
+("kompressor_starts", 0x0500, 4, 1, True),
+("kompressor_betriebsstunden", 0x0580, 4, 0.0002777777777777778, False),
+
+("einmalig_ww", 0xB020, 1, "raw", False),
+
+("energie_faktor", 0x163F, 1, 1, True),
+("energie_heizen", 0x1640, 4, 1, False),
+("energie_ww", 0x1650, 4, 1, False),
+("energie_heizen_elektro", 0x1660, 4, 1, False),
+("energie_ww_elektro", 0x1670, 4, 1, False),
+
+("jahresarbeitszahl", 0x1680, 1, 0.1, True),
+("jahresarbeitszahl_heizen", 0x1681, 1, 0.1, True),
+("jahresarbeitszahl_ww", 0x1682, 1, 0.1, True),
