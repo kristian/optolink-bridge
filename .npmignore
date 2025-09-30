@@ -1,0 +1,9 @@
+.vscode/
+.yarn/
+local/
+docs/*.pdf
+tools/*.txt
+.editorconfig
+.gitattributes
+local_config.toml
+package.tgz
