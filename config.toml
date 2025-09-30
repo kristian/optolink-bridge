@@ -158,3 +158,135 @@ unknown_dp_suffix = "raw/<addr>"
 [mqtt.options]
 # other broker options (see https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#client options)
 #...
+
+[mqtt.device_discovery]
+
+# set to false to disable publishing a device discovery payload
+enabled = true
+
+# the discovery prefix for devices, defaults to "homeassistant"
+prefix = "homeassistant"
+
+# optolink-bridge publishes a single device discovery payload, see:
+# https://www.home-assistant.io/integrations/mqtt/#device-discovery-payload
+
+# by default all data_points will be published as basic sensors, you may use the next section(s) to override specific
+# settings of the discovery payload, for example to set device classes, icons, units, etc., see the home assistant
+# mqtt integration documentation for details. note that all overrides must be specified in their non-abbreviated form
+
+[mqtt.device_discovery.overrides]
+
+[mqtt.device_discovery.overrides.device]
+
+# if not set, serial_number and identifiers default to the UTF8 string representation of 0xF010 (device serial number).
+# in case no identifiers are set and no serial_number is sent by Vitoconnect, no device discovery payload will be published!
+
+# identifiers = "any_identifier_defaults_to_serial_number"
+# serial_number = "device_serial_number"
+# name = "Vito"
+# model = "Vito"
+# manufacturer = "Viessmann"
+
+# the following override sections will override the default sensor and binary_sensor entity attributes, as listed here:
+# https://www.home-assistant.io/integrations/sensor.mqtt/ and https://www.home-assistant.io/integrations/binary_sensor.mqtt/
+# by default optolink-bridge publishes all data_points as sensors. in case you do not wish to publish a specific data_point,
+# you may set its entry in the overrides section to false, e.g.: some_data_point = false
+[mqtt.device_discovery.overrides.sensor]
+
+outside_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1, icon = "mdi:thermometer" }
+averaged_outside_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1, icon = "mdi:thermometer" }
+averaging_time_outside_temperature = { device_class = "duration", unit_of_measurement = "min" }
+
+operating_mode = { icon = "mdi:cog", value_template = """
+{% set mapping = ({
+  '00': 'Shutdown',
+  '01': 'Hot Water Only',
+  '02': 'Heating and Hot Water',
+  '03': 'Mode 3',
+  '04': 'Continuously Reduced',
+  '05': 'Continuously Normal',
+  '06': 'Normal Shutdown',
+  '07': 'Cooling Only'
+}) %}
+{{ mapping[value] | default('Unknown') }}""" }
+
+hkl_level = { state_class = "measurement", icon = "mdi:chart-line" }
+hkl_slope = { state_class = "measurement", icon = "mdi:chart-line" }
+hysteresis = { device_class = "temperature", unit_of_measurement = "K", icon = "mdi:thermometer-lines" }
+
+buffer_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+primary_circuit_flow_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+secondary_circuit_flow_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+return_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+
+"3way_valve_position" = { unit_of_measurement = "%", suggested_display_precision = 0, icon = "mdi:valve", value_template = "{{ value | float * 100 }}" }
+
+suction_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+suction_gas_pressure = { device_class = "pressure", unit_of_measurement = "bar", suggested_display_precision = 1 }
+hot_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+hot_gas_pressure = { device_class = "pressure", unit_of_measurement = "bar", suggested_display_precision = 1 }
+liquid_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+condensation_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+evaporation_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+compressor_power = { unit_of_measurement = "%", suggested_display_precision = 0, icon = "mdi:heat-pump", value_template = "{{ value | int }}" }
+ecv_position = { unit_of_measurement = "%", suggested_display_precision = 0, icon = "mdi:valve", value_template = "{{ value | int }}" }
+
+dhw_temperature_storage = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+dhw_temperature_setpoint = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+dhw_temperature_setpoint2 = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+
+room_temperature_setpoint_normal = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+room_temperature_setpoint_reduced = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+room_temperature_setpoint_party = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+
+compressor_phase = { icon = "mdi:information", value_template = """
+{% set mapping = ({
+  '00': 'Off',
+  '01': 'Cooling',
+  '02': 'Heating',
+  '03': 'Error',
+  '04': 'Switching to Cooling',
+  '05': 'Defrosting',
+  '06': 'Waiting',
+  '07': 'Standby',
+  '08': 'Switching to Heating',
+  '09': 'Stopping',
+  '0A': 'Manual Operation',
+  '0B': 'Starting',
+  '0C': 'Utility Lock',
+  '0D': 'Pre-Start',
+  '0E': 'Post-Stop',
+  '0F': 'Blocked',
+  '10': 'Pump-Down',
+  '11': 'PD -> Comp. start',
+  '12': 'PD -> pressure reached',
+  '13': 'PD -> shutdown'
+}) %}
+{{ mapping[value[:2]] | default('Unknown') }}""" }
+
+compressor_starts = { unit_of_measurement = "cycles", state_class = "total_increasing", icon = "mdi:restart" }
+compressor_operating_hours = { device_class = "duration", unit_of_measurement = "h", state_class = "total_increasing", icon = "mdi:fan-clock" }
+compressor_heating_power = { device_class = "power", unit_of_measurement = "W" }
+compressor_power_consumption = { device_class = "power", unit_of_measurement = "W" }
+
+annual_performance_factor = { state_class = "measurement", icon = "mdi:chart-line", value_template = "{{ value | float | round(2) }}" }
+annual_performance_factor_heating = { state_class = "measurement", icon = "mdi:chart-line", value_template = "{{ value | float | round(2) }}" }
+annual_performance_factor_dhw = { state_class = "measurement", icon = "mdi:chart-line", value_template = "{{ value | float | round(2) }}" }
+
+energy_balance_factor = { device_class = "power_factor", state_class = "measurement", value_template = "{{ (value | float / 10) | round(2) }}" }
+energy_balance_heating = { device_class = "energy", unit_of_measurement = "kWh", state_class = "total_increasing", icon = "mdi:fire", value_template = "{{ (value | float * states('sensor.energy_balance_factor') | float) | round(2) }}" }
+energy_balance_dhw = { device_class = "energy", unit_of_measurement = "kWh", state_class = "total_increasing", icon = "mdi:water", value_template = "{{ (value | float * states('sensor.energy_balance_factor') | float) | round(2) }}" }
+energy_balance_heating_electric = { device_class = "energy", unit_of_measurement = "kWh", state_class = "total_increasing", icon = "mdi:flash", value_template = "{{ (value | float * states('sensor.energy_balance_factor') | float) | round(2) }}" }
+energy_balance_dhw_electric = { device_class = "energy", unit_of_measurement = "kWh", state_class = "total_increasing", icon = "mdi:flash", value_template = "{{ (value | float * states('sensor.energy_balance_factor') | float) | round(2) }}" }
+
+# by default optolink-bridge publishes all data_points as sensors, in case you want to publish specific data_points as
+# binary sensors, you may specify them in the next section. in case you do not want to change any attribute of the
+# binary sensor, you may just specify the data point name with a value of true, e.g.: heating_circuit_circulation_pump = true
+[mqtt.device_discovery.overrides.binary_sensor]
+
+heating_circuit_circulation_pump = { payload_on = "01", payload_off = "00", device_class = "running", icon = "mdi:pump" }
+secondary_pump = { payload_on = "01", payload_off = "00", device_class = "running", icon = "mdi:pump" }
+dhw_circulation_pump = { payload_on = "01", payload_off = "00", device_class = "running", icon = "mdi:pump" }
+one_time_dhw = { payload_on = "02", payload_off = "00", device_class = "heat", icon = "mdi:water-thermometer" }
+auxiliary_heater_enable = { payload_on = "01", payload_off = "00", device_class = "running", icon = "mdi:heating-coil" }
+electric_heater_enable = { payload_on = "01", payload_off = "00", device_class = "running", icon = "mdi:heating-coil" }

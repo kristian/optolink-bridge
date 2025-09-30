@@ -6,11 +6,15 @@ import Queue from 'yocto-queue';
 import { connectAsync as mqttConnect } from 'mqtt';
 
 import { connect, fromOptoToVito, fromVitoToOpto } from './serial.js';
-import { default as parsePacket, encodePacket } from './parse_vs2.js';
+import { default as parsePacket, parseValue, encodePacket } from './parse_vs2.js';
+import { publishDevice } from './discovery.js';
 
-let logLevel, trace, logger = {}, dps, pollQueue = new Queue(), pollIntervals, busState = 0; // 0: syncing, 1: synced, 2: flowing
+let logLevel, trace, logger = {};
+let dps, pollQueue = new Queue(), pollIntervals;
+let busState = 0; // 0: syncing, 1: synced, 2: flowing
+let deviceSerialNo = undefined, deviceDiscoveryOptions = { enabled: true }, deviceDiscovery;
 
-function applyConfig(config) {
+async function applyConfig(config) {
   logLevel = {
     debug: 4, // debug log of all unknown data points
     info: 3, // logs all known data points
@@ -25,7 +29,7 @@ function applyConfig(config) {
     warn: logLevel >= 2 ? console.warn : () => {},
     error: logLevel >= 1 ? console.error : () => {},
   });
-  
+
   if (!dps || (config.auto_reload_addr_items ?? true)) {
     dps ??= new Map();
 
@@ -63,15 +67,51 @@ function applyConfig(config) {
       pollItem(false /* do not print a warning if it is already in the queue (on reload) */); // poll the item once immediately after startup
     }
     pollsPerSecond > 5. && logger.warn(`You are polling more than 5 items per second, which exceeds the (theoretical) limit of the low 4,800 bps Optolink bus baud rate. Please consider reducing the number of items in your poll_items list or the polling rate of the existing items (refer to the ival comment in the config.toml file for further information) and monitor the logs for saturation warnings of the poll queue.`);
+
+    if (deviceSerialNo === undefined) {
+      deviceSerialNo = null; // means we are waiting for the serial number to be sent by Vitoconnect, but do not allow to change it anymore if config.toml changes
+
+      const device = config.mqtt?.device_discovery?.overrides?.device;
+      deviceSerialNo = device?.serial_number || device?.identifiers || deviceSerialNo;
+      Array.isArray(deviceSerialNo) && (deviceSerialNo = deviceSerialNo[0]);
+    }
+
+    deviceDiscoveryOptions = config.mqtt?.device_discovery;
+    deviceDiscovery && await deviceDiscovery(); // (re-)publish the device discovery message, to publish any changes to the data points
   }
 
   return config;
 }
 
 // read and apply the config and also use "applyConfig" when the config changes
-const config = applyConfig(await readConfig(applyConfig));
+const config = await applyConfig(await readConfig(applyConfig));
 
-let mqttClient, mqttTopic, mqttAvailabilityTopic;
+let mqttClient, mqttTopic, mqttAvailabilityTopic, mqttDpTopic = dp => {
+  const suffix = (dp ? (config.suffix ?? '<dpname>') : (config.unknown_dp_suffix ?? 'raw/<addr>'))
+    .replaceAll(/<(?:dp)?addr>/g, formatAddr(dp.addr))
+    .replaceAll(/<dpname>/g, dp?.name ?? 'unknown');
+  return `${mqttTopic}${mqttTopic.endsWith('/') || suffix.startsWith('/') ? '' : '/'}${suffix}`;
+};
+
+deviceDiscovery = async function(options = (deviceDiscoveryOptions ?? { enabled: true })) {
+  if (!mqttClient?.connected || !deviceSerialNo || !(options?.enabled ?? true)) {
+    return;
+  }
+
+  try {
+    await publishDevice({
+      prefix: 'homeassistant',
+      ...options, // prefix, overrides
+      mqttClient, mqttAvailabilityTopic, mqttDpTopic,
+      deviceSerialNo, dps
+    });
+
+    logger.info('Published device discovery payload via MQTT');
+  } catch (err) {
+    logger.error('Failed to publish device discovery via MQTT:', err);
+  }
+}
+
 if (config.mqtt && config.mqtt.url) {
   config.mqtt.online ??= true; // if not set, use a online topic
   mqttTopic = config.mqtt.topic ?? 'Vito', mqttAvailabilityTopic =
@@ -96,6 +136,7 @@ if (config.mqtt && config.mqtt.url) {
   const mqttConnected = async () => {
     config.mqtt.online && await mqttClient.publishAsync(
       mqttAvailabilityTopic, `${true}`, { retain: true });
+    await deviceDiscovery(); // when connected, publish the device / data points
   };
   await mqttConnected(); // set online topic
   mqttClient.on('connect', mqttConnected);
@@ -141,20 +182,21 @@ const packetQueue = async.queue(async task => {
     return;
   }
 
+  // special handling for mqtt device discovery, in case no identifiers (serial number) have been specified in the config
+  // we wait for the serial number to be sent by Vitoconnect (0xF010) and then publish the discovery message
+  if (!deviceSerialNo && packet.addr === 0xF010 && (config.mqtt?.device_discovery?.enabled ?? true)) {
+    deviceSerialNo = parseValue('string', packet.data)?.trim?.();
+    await deviceDiscovery();
+  }
+
   const dp = dps.get(packet.addr);
   if (!dp && !config.publish_unknown_dps) {
     logger.debug(`Unknown data point (${formatAddr(packet.addr)}):`, packet.data?.toString('hex'));
     return;
   }
 
-  // parse the value based on the data point definition, or publish the raw data
-  const value = dp ? dp.parse(packet.data) : packet.data;
-
-  const suffix = (dp ? (config.suffix ?? '<dpname>') : (config.unknown_dp_suffix ?? 'raw/<addr>'))
-    .replaceAll(/<(?:dp)?addr>/g, formatAddr(packet.addr))
-    .replaceAll(/<dpname>/g, dp?.name ?? 'unknown');
-  const topic = `${mqttTopic}${mqttTopic.endsWith('/') || suffix.startsWith('/') ? '' : '/'}${suffix}`;
-
+  // get the topic and parse the value based on the data point definition, or publish the raw data
+  const topic = mqttDpTopic(dp), value = dp ? dp.parse(packet.data) : packet.data;
   logger.debug(`Publishing ${dp ? dp.name : 'unknown'} data point (${formatAddr(packet.addr)}) to ${topic}:`, value);
   await mqttClient.publishAsync(topic, Buffer.isBuffer(value) ? bufferToFormat(value, config.buffer_format ?? 'hex') :
     `${ typeof value === 'number' ? parseFloat(value.toFixed(config.max_decimals ?? 4 )) : value }`);

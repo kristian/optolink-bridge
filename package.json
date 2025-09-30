@@ -19,7 +19,12 @@
     "proxy",
     "local",
     "mqtt",
-    "safe"
+    "safe",
+    "ha",
+    "home assistant",
+    "homeassistant",
+    "discovery",
+    "device discovery"
   ],
   "type": "module",
   "bin": "./index.js",
