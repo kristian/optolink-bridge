@@ -107,19 +107,13 @@ function getRawValue(value, index) {
  * - Everything else to a string
  * @param {Buffer|any} value the (raw) value to output
  * @param {object} [dp] the datapoint to parse the value
- * @param {boolean} [scales] scale numbers to common factors (0.1, 0.01, 1/3600)
  * @returns {string} to value formatted as string
  */
-function getValue(value, dp, scales) {
-  if (typeof dp === 'boolean') {
-    scales = dp;
-    dp = undefined
-  }
-
+function getValue(value, dp) {
   if (Array.isArray(value)) {
-    return `${getValue(value[0], dp)} → ${getValue(value[1], dp, scales)}`;
+    return `${getValue(value[0], dp)} → ${getValue(value[1], dp)}`;
   } else if (typeof value === 'object' && value.data && value.write === true) {
-    return `${getValue(value.data, dp, scales)} (!)`;
+    return `${getValue(value.data, dp)} (!)`;
   } else if (Buffer.isBuffer(value) && dp) {
     try {
       value = dp.parse(value);
@@ -133,9 +127,10 @@ function getValue(value, dp, scales) {
     return `0x${value.toString('hex')}`;
   }
   
+  // in case the data point is unknown, output some scales for numbers
   if (typeof value === 'number') {
-    return scales ? [value, value / 10, value / 100, value / 3600].map(getNumber) : getNumber(value);
-  } else if (typeof value === 'bigint' && scales) {
+    return !dp ? [value, value / 10, value / 100, value / 3600].map(getNumber) : getNumber(value);
+  } else if (typeof value === 'bigint' && !dp) {
     return [value, value / BigInt(10), value / BigInt(100), value / BigInt(3600)].map(value => value.toString());
   }
 
@@ -441,13 +436,13 @@ if (types.mostly_variable_values) {
 
 if (types.identical_values) {
   console.log('Addresses that never changed / always contained identical values (e.g. configurations):');
-  output(types.identical_values, (values, dp) => `${values.length}× ${getValue(values[0], dp, true)}`);
+  output(types.identical_values, (values, dp) => `${values.length}× ${getValue(values[0], dp)}`);
   console.log();
 }
 
 if (types.strings_or_arrays) {
   console.log('Addresses which contained mostly strings or arrays (e.g. labels & complex data types):');
-  output(types.strings_or_arrays, (values, dp) => `e.g. ${getValue(values[0], dp, true)}`);
+  output(types.strings_or_arrays, (values, dp) => `e.g. ${getValue(values[0], dp)}`);
   console.log();
 }
 
