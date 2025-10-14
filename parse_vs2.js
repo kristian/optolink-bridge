@@ -195,7 +195,7 @@ const valueParser = new Parser()
 
         let options;
         if (type === 'string') {
-          options = { greedy: true };
+          options = { greedy: true, formatter: str => str.replace(/\x00/g, '') };
         } else if (type === 'buffer') {
           options = { readUntil: 'eof' };
         }
