@@ -280,7 +280,7 @@ for await (let line of lines) {
     let value;
     const dp = dps.get(packet.addr);
     if (dp) {
-      value = `data point: ${getValue(packet.data, dp)}`;
+      value = `data point "${dp.name}": ${getValue(packet.data, dp)}`;
     } else {
       value = `debug: ${JSON.stringify(Object.fromEntries(Object.entries(parseValue('debug', packet.data)).map(([key, value]) => [key, getValue(value)])))}`;
     }
