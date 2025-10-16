@@ -193,9 +193,9 @@ prefix = "homeassistant"
 # you may set its entry in the overrides section to false, e.g.: some_data_point = false
 [mqtt.device_discovery.overrides.sensor]
 
-outside_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1, icon = "mdi:thermometer" }
-averaged_outside_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1, icon = "mdi:thermometer" }
-averaging_time_outside_temperature = { device_class = "duration", unit_of_measurement = "min" }
+outside_temperature = { device_class = "temperature", state_class = "measurement", unit_of_measurement = "°C", suggested_display_precision = 1, icon = "mdi:thermometer" }
+averaged_outside_temperature = { device_class = "temperature", state_class = "measurement", unit_of_measurement = "°C", suggested_display_precision = 1, icon = "mdi:thermometer" }
+averaging_time_outside_temperature = { device_class = "duration", state_class = "measurement", unit_of_measurement = "min" }
 
 operating_mode = { icon = "mdi:cog", value_template = """
 {% set mapping = ({
@@ -212,32 +212,32 @@ operating_mode = { icon = "mdi:cog", value_template = """
 
 hkl_level = { state_class = "measurement", icon = "mdi:chart-line" }
 hkl_slope = { state_class = "measurement", icon = "mdi:chart-line" }
-hysteresis = { device_class = "temperature", unit_of_measurement = "K", icon = "mdi:thermometer-lines" }
+hysteresis = { device_class = "temperature", unit_of_measurement = "K", state_class = "measurement", icon = "mdi:thermometer-lines" }
 
-buffer_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-primary_circuit_flow_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-secondary_circuit_flow_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-return_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+buffer_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+primary_circuit_flow_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+secondary_circuit_flow_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+return_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
 
-"3way_valve_position" = { unit_of_measurement = "%", suggested_display_precision = 0, icon = "mdi:valve", value_template = "{{ value | float * 100 }}" }
+"3way_valve_position" = { unit_of_measurement = "%", state_class = "measurement", suggested_display_precision = 0, icon = "mdi:valve", value_template = "{{ value | float * 100 }}" }
 
-suction_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-suction_gas_pressure = { device_class = "pressure", unit_of_measurement = "bar", suggested_display_precision = 1 }
-hot_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-hot_gas_pressure = { device_class = "pressure", unit_of_measurement = "bar", suggested_display_precision = 1 }
-liquid_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-condensation_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-evaporation_temperature = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-compressor_power = { unit_of_measurement = "%", suggested_display_precision = 0, icon = "mdi:heat-pump", value_template = "{{ value | int }}" }
-ecv_position = { unit_of_measurement = "%", suggested_display_precision = 0, icon = "mdi:valve", value_template = "{{ value | int }}" }
+suction_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+suction_gas_pressure = { device_class = "pressure", unit_of_measurement = "bar", state_class = "measurement", suggested_display_precision = 1 }
+hot_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+hot_gas_pressure = { device_class = "pressure", unit_of_measurement = "bar", state_class = "measurement", suggested_display_precision = 1 }
+liquid_gas_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+condensation_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+evaporation_temperature = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+compressor_power = { unit_of_measurement = "%", state_class = "measurement", suggested_display_precision = 0, icon = "mdi:heat-pump", value_template = "{{ value | int }}" }
+ecv_position = { unit_of_measurement = "%", state_class = "measurement", suggested_display_precision = 0, icon = "mdi:valve", value_template = "{{ value | int }}" }
 
-dhw_temperature_storage = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-dhw_temperature_setpoint = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-dhw_temperature_setpoint2 = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+dhw_temperature_storage = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+dhw_temperature_setpoint = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+dhw_temperature_setpoint2 = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
 
-room_temperature_setpoint_normal = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-room_temperature_setpoint_reduced = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
-room_temperature_setpoint_party = { device_class = "temperature", unit_of_measurement = "°C", suggested_display_precision = 1 }
+room_temperature_setpoint_normal = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+room_temperature_setpoint_reduced = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
+room_temperature_setpoint_party = { device_class = "temperature", unit_of_measurement = "°C", state_class = "measurement", suggested_display_precision = 1 }
 
 compressor_phase = { icon = "mdi:information", value_template = """
 {% set mapping = ({
@@ -264,10 +264,10 @@ compressor_phase = { icon = "mdi:information", value_template = """
 }) %}
 {{ mapping[value[:2]] | default('Unknown') }}""" }
 
-compressor_starts = { unit_of_measurement = "cycles", state_class = "total_increasing", icon = "mdi:restart" }
+compressor_starts = { unit_of_measurement = "cycle(s)", state_class = "total_increasing", icon = "mdi:restart" }
 compressor_operating_hours = { device_class = "duration", unit_of_measurement = "h", state_class = "total_increasing", icon = "mdi:fan-clock" }
-compressor_heating_power = { device_class = "power", unit_of_measurement = "W" }
-compressor_power_consumption = { device_class = "power", unit_of_measurement = "W" }
+compressor_heating_power = { device_class = "power", unit_of_measurement = "W", state_class = "measurement" }
+compressor_power_consumption = { device_class = "power", unit_of_measurement = "W", state_class = "measurement" }
 
 annual_performance_factor = { state_class = "measurement", icon = "mdi:chart-line", value_template = "{{ value | float | round(2) }}" }
 annual_performance_factor_heating = { state_class = "measurement", icon = "mdi:chart-line", value_template = "{{ value | float | round(2) }}" }
