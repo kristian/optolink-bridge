@@ -150,7 +150,7 @@ const packetQueue = async.queue(async task => {
   trace && console.log(dateTimeString(), directionName(task.direction), (task.data ?? encodePacket(task.packet, task.direction & fromOpto)).toString('hex'));
 
   const packet = task.packet ?? parsePacket(task.data, task.direction & fromOpto);
-  if (packet.rest) {
+  if (packet.rest?.length) {
     // if there is any rest, two packets have been sent in the same direction, so unshift the rest as the next packet to the queue
     packetQueue.unshift({ data: packet.rest, direction: task.direction });
   }
