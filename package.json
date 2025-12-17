@@ -1,6 +1,6 @@
 {
   "name": "optolink-bridge",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Safely bridge the Optolink bus of your Viessmann heating system and publish attributes via MQTT + Home Assistant Device Discovery",
   "keywords": [
     "viessmann",
@@ -53,11 +53,11 @@
     "binary-parser-encoder-bump": "^2.2.1",
     "buffer-to-str": "^1.0.0",
     "change-case": "^5.4.4",
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "mqtt": "^5.14.1",
     "serialport": "^13.0.0",
-    "smol-toml": "^1.4.2",
-    "yocto-queue": "^1.2.1"
+    "smol-toml": "^1.5.2",
+    "yocto-queue": "^1.2.2"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.11.0"
 }
