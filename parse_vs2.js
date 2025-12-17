@@ -21,6 +21,14 @@ function when({ tag, type }) {
   }
 }
 
+function assertFunction(text, fn) {
+  const textFunction = function() {
+    return fn.apply(this, arguments);
+  };
+  textFunction.toString = () => text;
+  return textFunction;
+}
+
 /**
  * @returns a function that can be used for readUntil, to only peek a single byte (if any)
  */
@@ -45,9 +53,9 @@ const parser = new Parser()
       0x04: new Parser(), // EOT (end of transmission / sync. start)
       0x16: new Parser() // SYN (synchronous idle / start of transmission)
         .uint16('zero', {
-          assert: function(zero) {
+          assert: assertFunction('not matching the expected 16 00 00 start sequence', function(zero) {
             return !zero; // has to start with 16 00 00 (zero!)
-          }
+          })
         }),
       0x41: new Parser() // VS2_DAP_STANDARD (packet start)
         .uint8('len')
@@ -92,16 +100,13 @@ const parser = new Parser()
         }))
         .uint8('crc', {
           type: 'uint8',
-          assert: function(crc) {
+          assert: assertFunction('a mismatch to the calculated CRC', function(crc) {
             // if raw is not set / empty, we are in the encoding case, CRC will be calculated in the encode function
             return !this.raw?.length || crc256(this.raw, this.len) === crc;
-          }
+          })
         })
         .buffer('rest', {
-          readUntil: 'eof',
-          assert: function(rest) {
-            return !rest.length;
-          }
+          readUntil: 'eof'
         })
     }
   });

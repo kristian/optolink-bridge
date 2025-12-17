@@ -150,8 +150,14 @@ const packetQueue = async.queue(async task => {
   trace && console.log(dateTimeString(), directionName(task.direction), (task.data ?? encodePacket(task.packet, task.direction & fromOpto)).toString('hex'));
 
   const packet = task.packet ?? parsePacket(task.data, task.direction & fromOpto);
+  if (packet.rest) {
+    // if there is any rest, two packets have been sent in the same direction, so unshift the rest as the next packet to the queue
+    packetQueue.unshift({ data: packet.rest, direction: task.direction });
+  }
 
-  if (busState === 0 && task.direction & toOpto && packet.start === 0x16 && 'zero' in packet) {
+  if (task.direction === fromVitoToOpto && packet.start === 0x04) {
+    busState = 0; // reset synchronization
+  } else if (busState === 0 && task.direction & toOpto && packet.start === 0x16 && 'zero' in packet) {
     busState = 1;
   } else if (busState === 1 && task.direction & fromOpto && packet.res === 0x06 && !packet.peek?.length) {
     busState = 2;
