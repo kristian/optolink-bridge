@@ -12,6 +12,17 @@ import { publishDevice } from './discovery.js';
 let logLevel, trace, logger = {};
 let dps, pollQueue = new Queue(), pollIntervals;
 let busState = 0; // 0: syncing, 1: synced, 2: flowing
+let afterBusStateUpdate = async (newState, oldState) => {};
+async function updateBusState(state) {
+  const oldState = busState; busState = state;
+  if (typeof afterBusStateUpdate === 'function') {
+    try {
+      await afterBusStateUpdate(state, oldState);
+    } catch {
+      // ignore errors
+    }
+  }
+}
 let deviceSerialNo = undefined, deviceDiscoveryOptions = { enabled: true }, deviceDiscovery;
 
 async function applyConfig(config) {
@@ -113,10 +124,23 @@ deviceDiscovery = async function(options = (deviceDiscoveryOptions ?? { enabled:
 }
 
 if (config.mqtt && config.mqtt.url) {
-  config.mqtt.online ??= true; // if not set, use a online topic
-  mqttTopic = config.mqtt.topic ?? 'Vito', mqttAvailabilityTopic =
-    `${mqttTopic}${mqttTopic.endsWith('/') || config.mqtt.online.startsWith?.('/') ? '' : '/'}${
-      typeof config.mqtt.online === 'string' ? config.mqtt.online : 'online'}`;
+  config.mqtt.online ??= true; // if not set, use topic "online"
+  config.mqtt.publish_bus_state ??= true; // if not set, use topic "bus_state"
+  
+  mqttTopic = config.mqtt.topic ?? 'Vito';
+  function prefixMqttTopic(topic, defaultTopic) {
+    return `${mqttTopic}${mqttTopic.endsWith('/') || topic?.startsWith?.('/') ? '' : '/'}${
+      typeof topic === 'string' ? topic : defaultTopic}`;
+  }
+  mqttAvailabilityTopic = prefixMqttTopic(config.mqtt.online, 'online');
+
+  if (config.mqtt.publish_bus_state) {
+    const mqttBusStateTopic = prefixMqttTopic(config.mqtt.publish_bus_state, 'bus_state');
+    afterBusStateUpdate = async state => {
+      await mqttClient.publishAsync(
+        mqttBusStateTopic, `${state}`);
+    };
+  }
 
   const mqttOptions = {
     username: config.mqtt.username,
@@ -156,11 +180,11 @@ const packetQueue = async.queue(async task => {
   }
 
   if (task.direction === fromVitoToOpto && packet.start === 0x04) {
-    busState = 0; // reset synchronization
+    await updateBusState(0); // reset synchronization
   } else if (busState === 0 && task.direction & toOpto && packet.start === 0x16 && 'zero' in packet) {
-    busState = 1;
+    await updateBusState(1);
   } else if (busState === 1 && task.direction & fromOpto && packet.res === 0x06 && !packet.peek?.length) {
-    busState = 2;
+    await updateBusState(2);
 
     logger.info('Synchronization completed. Streams are now flowing');
   }
