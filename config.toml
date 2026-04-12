@@ -132,6 +132,9 @@ max_decimals = 4
 # (this is because if poll_items is empty, optolink-bridge will start in pass-through mode and is not able to intercept messages)
 auto_reload_addr_items = true
 
+# the maximum number of chunks to buffer in one direction, before considering the stream to be stalled and dropping oldest chunks, defaults to 1000
+max_buffered_chunks = 100
+
 [mqtt]
 
 # broker protocol / host / port

@@ -56,11 +56,12 @@ export async function connect(vitoPath = '/dev/ttyS0', optoPath = '/dev/ttyUSB0'
     lock: true // exclusive
   };
   
-  const vitoPort = new SerialPort({
+  // expose the vito + opto ports, mainly for debugging purpose
+  const vitoPort = eventEmitter.vitoPort = new SerialPort({
     path: vitoPath,
     ...portOptions
   });
-  const optoPort = new SerialPort({
+  const optoPort = eventEmitter.optoPort = new SerialPort({
     path: optoPath,
     ...portOptions
   });
@@ -80,8 +81,8 @@ export async function connect(vitoPath = '/dev/ttyS0', optoPath = '/dev/ttyUSB0'
   };
 
   eventEmitter.pipeline = Promise.all([
-    pipeline(vitoPort, createBridgeStream(fromVitoToOpto, vitoPort, optoPort), optoPort),
-    pipeline(optoPort, createBridgeStream(fromOptoToVito, vitoPort, optoPort), vitoPort)
+    pipeline(vitoPort, eventEmitter.vitoToOptoBridge = createBridgeStream(fromVitoToOpto, vitoPort, optoPort), optoPort),
+    pipeline(optoPort, eventEmitter.optoToVitoBridge = createBridgeStream(fromOptoToVito, vitoPort, optoPort), vitoPort)
   ]);
 
   return eventEmitter;

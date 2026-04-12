@@ -229,7 +229,7 @@ const packetQueue = async.queue(async task => {
   const topic = mqttDpTopic(dp), value = dp ? dp.parse(packet.data) : packet.data;
   logger.debug(`Publishing ${dp ? dp.name : 'unknown'} data point (${formatAddr(packet.addr)}) to ${topic}:`, value);
   await mqttClient.publishAsync(topic, Buffer.isBuffer(value) ? bufferToFormat(value, config.buffer_format ?? 'hex') :
-    `${ typeof value === 'number' ? parseFloat(value.toFixed(config.max_decimals ?? 4 )) : value }`);
+    `${ typeof value === 'number' ? parseFloat(value.toFixed(config.max_decimals ?? 4)) : value }`);
 }, 1 /* no concurrency, packets should to be processed in order */);
 packetQueue.error((err, task) => {
   logger.error(`Error while processing packet: ${task?.data?.toString('hex')}`, err);
@@ -260,6 +260,10 @@ const chunkQueue = async.queue(async task => {
     packetQueue.push({ data, packet, direction });
   } else {
     chunks.push(task.chunk);
+    if (chunks.length > (config.max_buffered_chunks ?? 100)) {
+      logger.warn(`The chunk queue has buffered more than ${config.max_buffered_chunks ?? 100} chunks in the same direction (${directionName(direction)}), which could indicate that the stream is stalled. Consider increasing the max_buffered_chunks setting in your config.toml file if you are polling huge packets or check if there are any issues with the serial connection.`);
+      chunks.shift(); // drop the oldest chunk
+    }
   }
 }, 1 /* no concurrency, chunks need to be processed in order */);
 chunkQueue.error((err, task) => {

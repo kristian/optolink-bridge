@@ -868,9 +868,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mqtt@npm:^5.14.1":
-  version: 5.14.1
-  resolution: "mqtt@npm:5.14.1"
+"mqtt@npm:^5.15.1":
+  version: 5.15.1
+  resolution: "mqtt@npm:5.15.1"
   dependencies:
     "@types/readable-stream": "npm:^4.0.21"
     "@types/ws": "npm:^8.18.1"
@@ -892,7 +892,7 @@ __metadata:
     mqtt: build/bin/mqtt.js
     mqtt_pub: build/bin/pub.js
     mqtt_sub: build/bin/sub.js
-  checksum: 10c0/30acd3858223cb5e7b4aa2a725f47e51bd40eaca530c0e3b5cf96f7377a1f0018a7fe4d2bc2c10327973d46d5a2b8118560936de1a3d8a209c7f37ee914cfdbd
+  checksum: 10c0/7f422deb8175b8f01427a8369e872837429d2ca294971d79f12398a368eb99e32aafa388a0eae156a7d98c393873836fa588d2ae4dc022526ae69daf381bf5a0
   languageName: node
   linkType: hard
 
@@ -980,9 +980,9 @@ __metadata:
     buffer-to-str: "npm:^1.0.0"
     change-case: "npm:^5.4.4"
     chokidar: "npm:^5.0.0"
-    mqtt: "npm:^5.14.1"
+    mqtt: "npm:^5.15.1"
     serialport: "npm:^13.0.0"
-    smol-toml: "npm:^1.5.2"
+    smol-toml: "npm:^1.6.1"
     yocto-queue: "npm:^1.2.2"
   bin:
     optolink-bridge: ./index.js
@@ -1189,10 +1189,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"smol-toml@npm:^1.5.2":
-  version: 1.5.2
-  resolution: "smol-toml@npm:1.5.2"
-  checksum: 10c0/ccfe5dda80c1d0c45869140b1e695a13a81ba7c57c1ca083146fe2f475d6f57031c12410f95d53a5acb3a1504e8e8e12cab36871909e8c8ce0c7011ccd22a2ac
+"smol-toml@npm:^1.6.1":
+  version: 1.6.1
+  resolution: "smol-toml@npm:1.6.1"
+  checksum: 10c0/511a78722f99c7616fdb46af708de3d7e81434b5a3d58061166da73f28bfc6cae4f0cd04683f60515b9c490cd10152fce72287c960b337419c0299cc1f0f2a22
   languageName: node
   linkType: hard
 
