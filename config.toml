@@ -3,7 +3,7 @@ port_vito = "/dev/ttyS0"
 # serial port of the Optolink adapter / device, defaults to "/dev/ttyUSB0"
 port_opto = "/dev/ttyUSB0"
 
-# log level, one of "none", "error", "warn", "info", "trace" or "verbose" defaults to "warn"
+# log level, one of "none", "error", "warn", "info", "debug" or "trace" defaults to "warn"
 # note: this setting may be changed during runtime and is picked up from this file automatically
 log_level = "warn"
 
