@@ -85,6 +85,10 @@ async function applyConfig(config) {
       const device = config.mqtt?.device_discovery?.overrides?.device;
       deviceSerialNo = device?.serial_number || device?.identifiers || deviceSerialNo;
       Array.isArray(deviceSerialNo) && (deviceSerialNo = deviceSerialNo[0]);
+
+      if (deviceSerialNo) {
+        logger.warn('No device serial number set in the config.toml, device discovery will be deferred until Vitoconnect sends it')
+      }
     }
 
     deviceDiscoveryOptions = config.mqtt?.device_discovery;
@@ -105,7 +109,10 @@ let mqttClient, mqttTopic, mqttAvailabilityTopic, mqttDpTopic = dp => {
 };
 
 deviceDiscovery = async function(options = (deviceDiscoveryOptions ?? { enabled: true })) {
-  if (!mqttClient?.connected || !deviceSerialNo || !(options?.enabled ?? true)) {
+  if (!mqttClient?.connected || !deviceSerialNo) {
+    return;
+  } else if (!(options?.enabled ?? true)) {
+    logger.warn('Device discovery is disabled in the config.toml');
     return;
   }
 
@@ -156,7 +163,9 @@ if (config.mqtt && config.mqtt.url) {
   };
 
   // connect to MQTT broker
+  logger.info('Connecting to MQTT broker and waiting for connection...');
   mqttClient = await mqttConnect(config.mqtt.url, mqttOptions);
+  logger.info('MQTT connected, proceeding with publishing online topic / device discovery');
   const mqttConnected = async () => {
     config.mqtt.online && await mqttClient.publishAsync(
       mqttAvailabilityTopic, `${true}`, { retain: true });
@@ -216,6 +225,7 @@ const packetQueue = async.queue(async task => {
   // we wait for the serial number to be sent by Vitoconnect (0xF010) and then publish the discovery message
   if (!deviceSerialNo && packet.addr === 0xF010 && (config.mqtt?.device_discovery?.enabled ?? true)) {
     deviceSerialNo = parseValue('string', packet.data)?.trim?.();
+    logger.info(`Device serial number received from Vitoconnect: ${deviceSerialNo}`);
     await deviceDiscovery();
   }
 
